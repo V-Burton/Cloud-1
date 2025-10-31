@@ -1,0 +1,7 @@
+new_user: ansible
+user_ssh_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+wordpress_project_dir: /opt/wordpress
+wordpress_port: 8080
+db_password: supersecret
+phpmyadmin_port: 8081

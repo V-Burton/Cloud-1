@@ -1,0 +1,9 @@
+---
+- name: Test de connexion ssh
+  hosts: aws
+  gather_facts: no
+  
+  tasks:
+    - name: Ping the Docker container
+      ansible.builtin.ping:
+...

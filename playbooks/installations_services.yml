@@ -1,0 +1,20 @@
+---
+- name: Installation des services
+  hosts: aws
+  remote_user: root
+  become: yes
+  pre_tasks:
+    - name: Détecter le système d'init (PID 1)
+      command: cat /proc/1/comm
+      register: init_comm
+      changed_when: false  
+  vars:
+    user: ansible
+
+  roles:
+    - role: ../roles/utiles
+      tags: ['utiles']
+    - role: ../roles/user
+      tags: ['user']
+    - role: ../roles/site
+      tags: ['site']
