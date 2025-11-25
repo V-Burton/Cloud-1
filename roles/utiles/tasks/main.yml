@@ -13,25 +13,3 @@
   command: docker --version
   register: docker_version
   changed_when: false
-
-- name: Démarrer le daemon Docker via systemd si disponible
-  service:
-    name: docker
-    state: started
-    enabled: yes
-  become: yes
-  when: init_comm.stdout == "systemd"
-
-- name: Lancer dockerd en arrière-plan si pas de systemd
-  shell: |
-    nohup dockerd --host=unix:///var/run/docker.sock >/var/log/dockerd.log 2>&1 &
-  args:
-    executable: /bin/bash
-  become: yes
-  when: init_comm.stdout != "systemd"
-
-- name: Attendre la création du socket Docker
-  wait_for:
-    path: /var/run/docker.sock
-    timeout: 30
-  become: yes

@@ -1,0 +1,20 @@
+<?php
+define( 'DB_NAME', '{{ mysql_db_name }}' );
+define( 'DB_USER', '{{ mysql_user }}' );
+define( 'DB_PASSWORD', '{{ mysql_password }}' );
+define( 'DB_HOST', 'db' );
+define( 'DB_CHARSET', 'utf8mb4' );
+define( 'DB_COLLATE', '' );
+$table_prefix = 'wp_';
+define( 'WP_DEBUG', {{ wordpress_debug | lower }} );
+
+// Force SSL derrière Nginx
+if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+    $_SERVER['HTTPS'] = 'on';
+}
+
+if ( ! defined( "ABSPATH" ) ) {
+    define( "ABSPATH", __DIR__ . "/" );
+}
+require_once ABSPATH . "wp-settings.php";
+?>
