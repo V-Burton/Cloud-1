@@ -2,65 +2,23 @@
 ---
 
 - name: Créer l'arborescence du projet
-  file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ new_user }}"
-    group: "{{ new_user }}"
-    mode: '0755'
-  loop:
-    - "{{ wordpress_project_dir }}"
-    - "{{ wordpress_project_dir }}/nginx"
-    - "{{ wordpress_project_dir }}/nginx/conf.d"
-    - "{{ wordpress_project_dir }}/certs"
-    - "{{ wordpress_project_dir }}/wordpress"
+  include_tasks: create-arborescence.yaml
 
 - name: Générer le certificat auto-signé
-  become: yes
-  shell: |
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout "{{ wordpress_project_dir }}/certs/selfsigned.key" \
-    -out "{{ wordpress_project_dir }}/certs/selfsigned.crt" \
-    -subj "/CN={{ ansible_host }}"
-  args:
-    creates: "{{ wordpress_project_dir }}/certs/selfsigned.crt"
+  include_tasks: certificat.yaml
 
-- name: Déployer docker-compose.yml
-  template:
-    src: docker-compose.yml.j2
-    dest: "{{ wordpress_project_dir }}/docker-compose.yml"
-    owner: "{{ new_user }}"
-    group: "{{ new_user }}"
-
-- name: Déployer wp-config.php
-  template:
-    src: wp-config.php.j2
-    dest: "{{ wordpress_project_dir }}/wordpress/wp-config.php"
-    owner: "{{ new_user }}"
-    group: "{{ new_user }}"
-
-- name: Déployer la configuration Nginx
-  template:
-    src: ../files/nginx/default.conf.j2
-    dest: "{{ wordpress_project_dir }}/nginx/default.conf"
-    owner: "{{ new_user }}"
-    group: "{{ new_user }}"
-
-
-- name: Arrêter les conteneurs existants (Reset)
-  become: yes
-  shell: docker-compose down --remove-orphans
-  args:
-    chdir: "{{ wordpress_project_dir }}"
-  ignore_errors: yes
+- name: Déployer les fichiers de configuration Docker Compose, wp-config.php et Nginx
+  include_tasks: deploy.yaml
+  tags:
+    - deploy-docker-compose
+    - deploy-wp-config
+    - deploy-nginx-config
 
 - name: Démarrer les services
   become: yes
   shell: docker-compose up -d --remove-orphans
   args:
     chdir: "{{ wordpress_project_dir }}"
-
-# --- AJOUTS ---
 
 - name: Attendre que le site soit accessible en HTTPS
   wait_for:

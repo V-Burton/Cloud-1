@@ -1,0 +1,9 @@
+- name: Générer le certificat auto-signé
+  become: yes
+  shell: |
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout "{{ wordpress_project_dir }}/certs/selfsigned.key" \
+    -out "{{ wordpress_project_dir }}/certs/selfsigned.crt" \
+    -subj "/CN={{ ansible_host }}"
+  args:
+    creates: "{{ wordpress_project_dir }}/certs/selfsigned.crt"

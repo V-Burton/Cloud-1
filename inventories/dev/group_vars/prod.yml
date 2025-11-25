@@ -1,8 +1,6 @@
 # Ansible group variables for the 'prod' group
 
-# On définit le chemin vers ton .env (Chemin absolu pour éviter les erreurs)
-# Tu peux aussi utiliser '{{ playbook_dir }}/../.env' si tu lances depuis le dossier playbooks
-env_file: /home/vburton/Documents/Cloud-1/.env
+env_file: "{{ playbook_dir }}/../.env"
 
 new_user: "{{ lookup('ini', 'NEW_USER type=properties file=' + env_file) }}"
 user_ssh_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"

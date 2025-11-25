@@ -1,4 +1,17 @@
 ---
+- name: Attendre que la base de données soit prête
+  become: yes
+  shell: >
+    docker-compose exec -T db 
+    mysqladmin ping -h localhost -u"{{ mysql_user }}" -p"{{ mysql_password }}" --silent
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  register: db_check
+  until: db_check.rc == 0
+  retries: 24
+  delay: 5
+  changed_when: false
+
 - name: Vérifier si WordPress est installé
   become: yes
   shell: docker-compose run --rm wpcli wp core is-installed
