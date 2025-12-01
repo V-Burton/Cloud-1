@@ -14,11 +14,13 @@
     - deploy-wp-config
     - deploy-nginx-config
 
-- name: Démarrer les services
+- name: Démarrer les services (Mise à jour intelligente)
   become: yes
   shell: docker-compose up -d --remove-orphans
   args:
     chdir: "{{ wordpress_project_dir }}"
+  register: docker_compose_output
+  changed_when: "'Creating' in docker_compose_output.stderr or 'Recreating' in docker_compose_output.stderr"
 
 - name: Attendre que le site soit accessible en HTTPS
   wait_for:
@@ -32,5 +34,7 @@
 - name: Exécuter l'installation finale du site
   include_tasks: install-website.yaml
   tags: 
+    - wait_for_db
+    - install_core
     - install-website
     - create_wp_user

@@ -1,6 +1,6 @@
 ---
 - name: Installation des services
-  hosts: aws
+  hosts: vburton
   remote_user: root
   become: yes
   pre_tasks:
