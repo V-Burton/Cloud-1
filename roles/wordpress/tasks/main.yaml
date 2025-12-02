@@ -1,0 +1,8 @@
+---
+- name: Copier wp-config.php sur le server
+  template:
+    src: ../files/wp-config/wp-config.php.j2
+    dest: "{{ wordpress_project_dir }}/wordpress/wp-config.php"
+    owner: "{{ new_user }}"
+    group: "{{ new_user }}"
+  tags: copy-wp-config

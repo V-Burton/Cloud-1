@@ -1,0 +1,6 @@
+---
+- name: Reload Nginx
+  become: yes
+  shell: docker-compose exec -T nginx nginx -s reload
+  args:
+    chdir: "{{ wordpress_project_dir }}"

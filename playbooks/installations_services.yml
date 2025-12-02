@@ -1,7 +1,6 @@
 ---
 - name: Installation des services
   hosts: vburton
-  remote_user: root
   become: yes
   pre_tasks:
     - name: Détecter le système d'init (PID 1)
@@ -12,9 +11,17 @@
     user: ansible
 
   roles:
-    - role: ../roles/utiles
-      tags: ['utiles']
-    - role: ../roles/user
-      tags: ['user']
-    - role: ../roles/site
-      tags: ['site']
+    - role: ../roles/common
+      tags: ['first_install', 'common']
+    
+    - role: ../roles/webserver
+      tags: ['first_install', 'deploy', 'webserver']
+
+    - role: ../roles/wordpress
+      tags: ['first_install', 'deploy', 'wordpress']
+      
+    - role: ../roles/stack
+      tags: ['first_install', 'deploy', 'stack']
+
+    - role: ../roles/wordpress_install
+      tags: ['first_install', 'deploy', 'wordpress_install']

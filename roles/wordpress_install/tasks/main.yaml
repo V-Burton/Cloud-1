@@ -1,0 +1,53 @@
+---
+- name: Attendre que le port 3306 de la DB soit accessible
+  become: yes
+  shell: docker-compose run --rm --entrypoint sh wpcli -c 'nc -z -v -w5 db 3306'
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  register: db_net_check
+  until: db_net_check.rc == 0
+  retries: 24
+  delay: 5
+  changed_when: false
+  tags: wait_for_db
+
+- name: Vérifier si WordPress est installé
+  become: yes
+  shell: docker-compose run --rm wpcli wp core is-installed
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  register: wp_installed
+  failed_when: false
+  changed_when: false
+  tags: check_wp_installed
+
+- name: Installer le Core WordPress (si nécessaire)
+  become: yes
+  shell: |
+    docker-compose run --rm wpcli wp core install \
+      --url="{{ wp_url }}" \
+      --title="{{ wp_title }}" \
+      --admin_user="{{ wp_admin_user }}" \
+      --admin_password="{{ wp_admin_password }}" \
+      --admin_email="{{ wp_admin_email }}" \
+      --skip-email
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  when: wp_installed.rc != 0
+  tags: install_core
+
+- name: Créer l'utilisateur secondaire (si nécessaire)
+  become: yes
+  shell: |
+    docker-compose run --rm wpcli wp user create \
+      "{{ wp_user }}" "{{ wp_user_email }}" \
+      --user_pass="{{ wp_user_password }}" \
+      --role=editor
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  register: create_user_cmd
+  failed_when: 
+    - create_user_cmd.rc != 0
+    - "'already registered' not in create_user_cmd.stdout"
+    - "'already registered' not in create_user_cmd.stderr"
+  tags: create_wp_user
