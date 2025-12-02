@@ -8,11 +8,23 @@
   include_tasks: certificat.yaml
 
 - name: Déployer les fichiers de configuration Docker Compose, wp-config.php et Nginx
-  include_tasks: deploy.yaml
+  include_tasks: copie-files.yaml
   tags:
-    - deploy-docker-compose
-    - deploy-wp-config
-    - deploy-nginx-config
+    - copy-docker-compose
+    - copy-wp-config
+    - copy-nginx-config
+
+- name: Vérifier si le fichier docker-compose.yml a changé
+  stat:
+    path: "{{ wordpress_project_dir }}/docker-compose.yml"
+  register: docker_compose_file
+
+- name: Arrêter les services si le fichier docker-compose.yml a changé
+  become: yes
+  shell: docker-compose down
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  when: docker_compose_file.stat.mtime | default(0) > ansible_date_time.epoch | int - 60
 
 - name: Démarrer les services (Mise à jour intelligente)
   become: yes
