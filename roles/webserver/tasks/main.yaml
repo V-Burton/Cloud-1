@@ -1,7 +1,7 @@
 ---
 - name: Copier la configuration Nginx sur le server
   template:
-    src: ../files/nginx/default.conf.j2
+    src: ../templates/default.conf.j2
     dest: "{{ wordpress_project_dir }}/nginx/default.conf"
     owner: "{{ new_user }}"
     group: "{{ new_user }}"

@@ -1,13 +1,28 @@
 ---
+
+- name: Met à jour le cache des paquets
+  apt:
+    update_cache: yes
+
 - name: Met à jour les paquets et installe les services nécessaires
-  apt: name={{ item }} update_cache=yes state=latest
-  with_items:
-    - zsh
-    - vim
-    - htop
-    - git
-    - docker
-    - docker-compose
+  apt:
+    name:
+      - zsh
+      - vim
+      - git
+      - docker.io
+    state: latest
+
+- name: Télécharger Docker Compose (Standalone)
+  get_url:
+    url: "https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-x86_64"
+    dest: /usr/local/bin/docker-compose
+    mode: '0755'
+
+- name: Test docker installation
+  command: docker --version
+  register: docker_version
+  changed_when: false
 
 
 - name: Test docker installation
@@ -43,13 +58,3 @@
     - "{{ wordpress_project_dir }}/nginx/conf.d"
     - "{{ wordpress_project_dir }}/certs"
     - "{{ wordpress_project_dir }}/wordpress"
-
-- name: Générer le certificat auto-signé
-  become: yes
-  shell: |
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout "{{ wordpress_project_dir }}/certs/selfsigned.key" \
-    -out "{{ wordpress_project_dir }}/certs/selfsigned.crt" \
-    -subj "/CN={{ ansible_host }}"
-  args:
-    creates: "{{ wordpress_project_dir }}/certs/selfsigned.crt"

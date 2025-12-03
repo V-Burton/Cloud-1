@@ -51,3 +51,12 @@
     - "'already registered' not in create_user_cmd.stdout"
     - "'already registered' not in create_user_cmd.stderr"
   tags: create_wp_user
+
+- name: Mettre à jour l'URL du site (si l'IP a changé)
+  become: yes
+  shell: |
+    docker-compose run --rm wpcli wp option update home "{{ wp_url }}" && \
+    docker-compose run --rm wpcli wp option update siteurl "{{ wp_url }}"
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  tags: update_url

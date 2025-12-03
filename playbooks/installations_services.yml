@@ -1,18 +1,21 @@
 ---
 - name: Installation des services
-  hosts: vburton
+  hosts: cloud1
   become: yes
+  vars:
+    user: ansible
   pre_tasks:
     - name: Détecter le système d'init (PID 1)
       command: cat /proc/1/comm
       register: init_comm
       changed_when: false  
-  vars:
-    user: ansible
 
   roles:
     - role: ../roles/common
       tags: ['first_install', 'common']
+
+    - role: ../roles/certificats
+      tags: ['first_install', 'certificats']
     
     - role: ../roles/webserver
       tags: ['first_install', 'deploy', 'webserver']

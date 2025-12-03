@@ -1,0 +1,16 @@
+---
+- name: Vérifier si le certificat existe et correspond à l'IP actuelle
+  become: yes
+  shell: openssl x509 -noout -subject -in "{{ wordpress_project_dir }}/certs/selfsigned.crt" | grep "{{ ansible_host }}"
+  register: cert_check
+  ignore_errors: yes
+  changed_when: false
+
+- name: Générer le certificat auto-signé
+  become: yes
+  shell: |
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout "{{ wordpress_project_dir }}/certs/selfsigned.key" \
+    -out "{{ wordpress_project_dir }}/certs/selfsigned.crt" \
+    -subj "/CN={{ ansible_host }}"
+  when: cert_check.rc != 0
