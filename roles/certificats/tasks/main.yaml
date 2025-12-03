@@ -1,13 +1,23 @@
 ---
+- name: Créer l'arborescence du projet
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ wordpress_project_dir }}"
+    - "{{ wordpress_project_dir }}/nginx"
+    - "{{ wordpress_project_dir }}/nginx/conf.d"
+    - "{{ wordpress_project_dir }}/certs"
+    - "{{ wordpress_project_dir }}/wordpress"
+
 - name: Vérifier si le certificat existe et correspond à l'IP actuelle
-  become: yes
   shell: openssl x509 -noout -subject -in "{{ wordpress_project_dir }}/certs/selfsigned.crt" | grep "{{ ansible_host }}"
   register: cert_check
   ignore_errors: yes
   changed_when: false
 
 - name: Générer le certificat auto-signé
-  become: yes
   shell: |
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout "{{ wordpress_project_dir }}/certs/selfsigned.key" \

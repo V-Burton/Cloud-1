@@ -7,24 +7,20 @@
     group: "{{ new_user }}"
   tags: copy-docker-compose
 
-- name: Vérifier si le fichier docker-compose.yml est présent et a changé
-  stat:
-    path: "{{ wordpress_project_dir }}/docker-compose.yml"
-  register: docker_compose_file
-
-- name: Arrêter les services si le fichier docker-compose.yml a changé
-  become: yes
-  shell: docker-compose down
+- name: Forcer le téléchargement des nouvelles images Docker
+  shell: docker-compose pull
   args:
     chdir: "{{ wordpress_project_dir }}"
-  when:
-    - docker_compose_file.stat.exists 
-    - docker_compose_file.stat.mtime | default(0) > ansible_date_time.epoch | int - 60
+  tags: pull-docker-images
 
-- name: Démarrer les services (Mise à jour intelligente)
-  become: yes
-  shell: docker-compose up -d --remove-orphans
+- name: Recréer les conteneurs si une image a changé
+  shell: docker-compose up -d --force-recreate --remove-orphans
   args:
     chdir: "{{ wordpress_project_dir }}"
   register: docker_compose_output
   changed_when: "'Creating' in docker_compose_output.stderr or 'Recreating' in docker_compose_output.stderr"
+  tags: recreate-containers
+
+- name: Nettoyer uniquement les conteneurs arrêtés
+  shell: docker container prune -f
+  tags: cleanup-docker

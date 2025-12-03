@@ -17,8 +17,7 @@ mysql_password: "{{ lookup('ini', 'MYSQL_PASSWORD type=properties file=' + env_f
 phpmyadmin_port: "{{ lookup('ini', 'PHPMYADMIN_PORT type=properties file=' + env_file) }}"
 
 # Infos du site
-wp_url: "https://{{ ansible_host }}"
-# Attention aux quotes dans le .env, le lookup les récupère parfois.
+wp_url: "https://{{ cloud1_domain }}"
 wp_title: "{{ lookup('ini', 'WP_TITLE type=properties file=' + env_file) }}"
 
 # Admin

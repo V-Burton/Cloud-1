@@ -3,6 +3,7 @@
 - name: Met à jour le cache des paquets
   apt:
     update_cache: yes
+  changed_when: false
 
 - name: Met à jour les paquets et installe les services nécessaires
   apt:
@@ -44,17 +45,3 @@
 - name: Ajout de l'utilisateur '{{ user }}' au groupe 'docker'
   when: user is defined
   user: name={{ user }} groups=docker append=yes
-
-- name: Créer l'arborescence du projet
-  file:
-    path: "{{ item }}"
-    state: directory
-    owner: "{{ new_user }}"
-    group: "{{ new_user }}"
-    mode: '0755'
-  loop:
-    - "{{ wordpress_project_dir }}"
-    - "{{ wordpress_project_dir }}/nginx"
-    - "{{ wordpress_project_dir }}/nginx/conf.d"
-    - "{{ wordpress_project_dir }}/certs"
-    - "{{ wordpress_project_dir }}/wordpress"

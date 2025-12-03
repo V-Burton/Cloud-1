@@ -1,0 +1,10 @@
+- name: Initialisation du serveur
+  hosts: cloud1_admin
+  remote_user: vburton
+  become: yes
+  vars:
+    user: ansible
+  
+  roles:
+    - role: ../roles/common
+      tags: ['common']

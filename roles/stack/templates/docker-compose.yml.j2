@@ -52,7 +52,7 @@ services:
       - ./wordpress/wp-config.php:/var/www/html/wp-config.php
 
   phpmyadmin:
-    image: phpmyadmin:5.2.3-apache
+    image: phpmyadmin:5.2-apache
     depends_on:
       - db
     expose:

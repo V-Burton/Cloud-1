@@ -1,6 +1,5 @@
 ---
 - name: Attendre que le port 3306 de la DB soit accessible
-  become: yes
   shell: docker-compose run --rm --entrypoint sh wpcli -c 'nc -z -v -w5 db 3306'
   args:
     chdir: "{{ wordpress_project_dir }}"
@@ -12,7 +11,6 @@
   tags: wait_for_db
 
 - name: Vérifier si WordPress est installé
-  become: yes
   shell: docker-compose run --rm wpcli wp core is-installed
   args:
     chdir: "{{ wordpress_project_dir }}"
@@ -22,7 +20,6 @@
   tags: check_wp_installed
 
 - name: Installer le Core WordPress (si nécessaire)
-  become: yes
   shell: |
     docker-compose run --rm wpcli wp core install \
       --url="{{ wp_url }}" \
@@ -37,7 +34,6 @@
   tags: install_core
 
 - name: Créer l'utilisateur secondaire (si nécessaire)
-  become: yes
   shell: |
     docker-compose run --rm wpcli wp user create \
       "{{ wp_user }}" "{{ wp_user_email }}" \
@@ -46,17 +42,52 @@
   args:
     chdir: "{{ wordpress_project_dir }}"
   register: create_user_cmd
+  changed_when: "'Created user' in create_user_cmd.stdout"
   failed_when: 
     - create_user_cmd.rc != 0
     - "'already registered' not in create_user_cmd.stdout"
     - "'already registered' not in create_user_cmd.stderr"
   tags: create_wp_user
 
-- name: Mettre à jour l'URL du site (si l'IP a changé)
-  become: yes
+- name: Mettre à jour les options de configuration du site
   shell: |
-    docker-compose run --rm wpcli wp option update home "{{ wp_url }}" && \
-    docker-compose run --rm wpcli wp option update siteurl "{{ wp_url }}"
+    docker-compose run --rm wpcli wp option update {{ item.key }} "{{ item.value }}"
   args:
     chdir: "{{ wordpress_project_dir }}"
-  tags: update_url
+  loop:
+    - { key: 'blogname', value: "{{ wp_title }}" }
+    - { key: 'home', value: "{{ wp_url }}" }
+    - { key: 'siteurl', value: "{{ wp_url }}" }
+  register: wp_options_update
+  changed_when: 
+    - "'Success' in wp_options_update.stdout"
+    - "'unchanged' not in wp_options_update.stdout"
+  tags: ['deploy', 'wordpress_install', 'config_update']
+
+- name: Mettre à jour les données des utilisateurs WordPress
+  shell: |
+    TARGET_USER="{{ item.key }}"
+    TARGET_PASS="{{ item.password }}"
+    TARGET_EMAIL="{{ item.email }}"
+    if docker-compose run --rm -T wpcli wp user check-password "$TARGET_USER" "$TARGET_PASS" > /dev/null 2>&1; then
+        PASS_OK=1
+    else
+        PASS_OK=0
+    fi
+    CURRENT_EMAIL=$(docker-compose run --rm -T wpcli wp user get "$TARGET_USER" --field=user_email 2>/dev/null | tr -d '[:space:]')
+    echo "DEBUG: User=$TARGET_USER | PassOK=$PASS_OK | CurrentEmail='$CURRENT_EMAIL' | TargetEmail='$TARGET_EMAIL'"
+    if [ "$PASS_OK" -eq 0 ] || [ "$CURRENT_EMAIL" != "$TARGET_EMAIL" ]; then
+        docker-compose run --rm -T wpcli wp user update "$TARGET_USER" --user_pass="$TARGET_PASS" --user_email="$TARGET_EMAIL" > /dev/null
+        echo "UPDATE_DONE"
+    else
+        echo "NO_UPDATE"
+    fi
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+    executable: /bin/bash
+  loop:
+    - { key: "{{ wp_admin_user }}", password: "{{ wp_admin_password }}", email: "{{ wp_admin_email }}" }
+    - { key: "{{ wp_user }}", password: "{{ wp_user_password }}", email: "{{ wp_user_email }}" }
+  register: users_wp_data_update
+  changed_when: "'UPDATE_DONE' in users_wp_data_update.stdout"
+  tags: ['deploy', 'wordpress_install', 'config_update']
