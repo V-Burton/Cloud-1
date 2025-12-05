@@ -13,16 +13,25 @@
 
   roles:
     - role: ../roles/certificats
-      tags: ['first_install', 'certificats']
+      tags: ['install', 'certificats']
     
-    - role: ../roles/webserver
-      tags: ['first_install', 'deploy', 'webserver']
+    - role: ../roles/compose
+      tags: ['install', 'deploy', 'compose']
 
-    - role: ../roles/wordpress
-      tags: ['first_install', 'deploy', 'wordpress']
+    - role: ../roles/database
+      tags: ['install', 'deploy', 'database']
       
-    - role: ../roles/stack
-      tags: ['first_install', 'deploy', 'stack']
+    - role: ../roles/wordpress
+      tags: ['install', 'deploy', 'wordpress']
 
+    - role: ../roles/phpmyadmin
+      tags: ['install', 'deploy', 'phpmyadmin']
+
+    - role: ../roles/nginx
+      tags: ['install', 'deploy', 'nginx']
+      
     - role: ../roles/wordpress_install
-      tags: ['first_install', 'deploy', 'wordpress_install']
+      tags: ['install', 'deploy', 'wordpress_install']
+
+    - role: ../roles/new-images
+      tags: ['new-images']

@@ -1,0 +1,15 @@
+---
+- name: Vérifier l'état du conteneur phpmyadmin
+  shell: docker-compose ps -q phpmyadmin
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  register: phpmyadmin_status
+  changed_when: false
+  ignore_errors: yes
+
+- name: Demarrer les services phpmyadmin
+  shell: docker-compose up -d phpmyadmin
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  tags: start-phpmyadmin
+  when: phpmyadmin_status.stdout == ""

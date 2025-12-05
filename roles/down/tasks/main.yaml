@@ -1,0 +1,30 @@
+---
+- name: Down tout les containers Docker Compose
+  shell: docker-compose down
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  tags: down-containers
+
+- name: Down le container phpmyadmin
+  shell: docker-compose down phpmyadmin
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  tags: down-phpmyadmin
+
+- name: Down le container wordpress
+  shell: docker-compose down wordpress
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  tags: down-wordpress
+
+- name: Down le container db
+  shell: docker-compose down db
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  tags: down-database
+
+- name: down le container nginx
+  shell: docker-compose down nginx
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  tags: down-nginx

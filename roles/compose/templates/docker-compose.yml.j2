@@ -17,8 +17,6 @@ services:
 
   wordpress:
     image: wordpress:php8.4-apache
-    depends_on:
-      - db
     expose:
       - "80"
     networks:
@@ -35,9 +33,6 @@ services:
 
   wpcli:
     image: wordpress:cli-php8.4
-    depends_on:
-      - db
-      - wordpress
     restart: "no"
     networks:
       - wp-network
@@ -53,8 +48,6 @@ services:
 
   phpmyadmin:
     image: phpmyadmin:5.2-apache
-    depends_on:
-      - db
     expose:
       - "80"
     restart: always
@@ -66,9 +59,6 @@ services:
 
   nginx:
     image: nginx:alpine3.22
-    depends_on:
-      - wordpress
-      - phpmyadmin
     ports:
       - "80:80"
       - "443:443"

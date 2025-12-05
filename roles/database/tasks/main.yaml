@@ -1,0 +1,15 @@
+---
+- name: Vérifier l'état du conteneur db
+  shell: docker-compose ps -q db
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  register: db_status
+  changed_when: false
+  ignore_errors: yes
+
+- name: Deployer la base de donnees MySQL
+  shell: docker-compose up -d db
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  tags: start-database
+  when: db_status.stdout == ""

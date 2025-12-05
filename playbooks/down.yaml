@@ -1,0 +1,15 @@
+---
+- name: Installation des services
+  hosts: cloud1_app
+  become: no
+  vars:
+    ansible_user: "{{ lookup('ini', 'ANSIBLE_USER type=properties file=../.env') }}"
+    ansible_ssh_private_key_file: ~/.ssh/id_rsa
+  pre_tasks:
+    - name: Détecter le système d'init (PID 1)
+      command: cat /proc/1/comm
+      register: init_comm
+      changed_when: false  
+
+  roles:
+    - role: ../roles/down

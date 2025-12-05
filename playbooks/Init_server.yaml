@@ -3,7 +3,7 @@
   remote_user: vburton
   become: yes
   vars:
-    user: ansible
+    user: "{{ lookup('ini', 'ANSIBLE_USER type=properties file=../.env') }}"
   
   roles:
     - role: ../roles/common

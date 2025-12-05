@@ -6,3 +6,18 @@
     owner: "{{ new_user }}"
     group: "{{ new_user }}"
   tags: copy-wp-config
+
+- name: Vérifier l'état du conteneur WordPress
+  shell: docker-compose ps -q wordpress
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  register: wordpress_status
+  changed_when: false
+  ignore_errors: yes
+
+- name: Demarrer les services WordPress
+  shell: docker-compose up -d wordpress
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  tags: start-wordpress
+  when: wordpress_status.stdout == ""

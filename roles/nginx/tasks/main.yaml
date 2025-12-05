@@ -1,0 +1,24 @@
+---
+- name: Copier la configuration Nginx sur le server
+  template:
+    src: ../templates/default.conf.j2
+    dest: "{{ wordpress_project_dir }}/nginx/default.conf"
+    owner: "{{ new_user }}"
+    group: "{{ new_user }}"
+  tags: copy-nginx-config
+  notify: Reload Nginx
+
+- name: Vérifier l'état du conteneur Nginx
+  shell: docker-compose ps -q nginx
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  register: nginx_status
+  changed_when: false
+  ignore_errors: yes
+
+- name: Démarrer les services Nginx
+  shell: docker-compose up -d nginx
+  args:
+    chdir: "{{ wordpress_project_dir }}"
+  tags: start-nginx
+  when: nginx_status.stdout == ""
